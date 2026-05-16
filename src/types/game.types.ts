@@ -43,7 +43,9 @@ export type QuestionType =
   | 'errorCorrection'
   | 'phoneticMatch'
   | 'idiomCompletion'
-  | 'academicWord';
+  | 'academicWord'
+  | 'grammarFix'
+  | 'shooter';
 
 export interface Question {
   type: QuestionType;
@@ -55,6 +57,11 @@ export interface Question {
   explanation?: string;
   difficulty?: 1 | 2 | 3 | 4 | 5;
   band?: 5 | 6 | 7 | 8;
+  /** Grammar Fix mode: shown when the player answers incorrectly */
+  grammarTip?: string;
+  flawedSentence?: string;
+  correctSentence?: string;
+  errorLabel?: string;
 }
 
 export interface Particle {

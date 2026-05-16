@@ -1,7 +1,15 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { GameState, Alien, Particle, Laser, Star, WordData } from '../../types/game.types';
+import { GameState, Alien, Particle, Laser, Star, WordData, Question } from '../../types/game.types';
+import { GameMode } from '../../types/mode.types';
 import { wordBank } from '../../data/wordBank';
-import { generateQuestion, createAlien, checkAnswer } from '../../data/questionGenerator';
+import { createAlien, checkAnswer } from '../../data/questionGenerator';
+import { pickGrammarChallenges, GrammarChallenge } from '../../data/grammarChallenges';
+import {
+  generateQuestionForMode,
+  checkShooterAnswer,
+  checkGrammarAnswer,
+} from '../../data/modeQuestions';
+import { SPEED_RUN_SECONDS } from '../../data/gameModes';
 import { audioEngine } from '../../utils/audioUtils';
 import { 
   createStars, updateStars, drawStars, 
@@ -10,8 +18,10 @@ import {
 } from '../../utils/canvasUtils';
 import GameUI from './GameUI';
 import QuestionPrompt from './QuestionPrompt';
+import GrammarFeedback, { GrammarFeedbackData } from './GrammarFeedback';
 
 interface GameScreenProps {
+  gameMode: GameMode;
   onGameOver: (stats: {
     score: number;
     wordsCorrect: number;
@@ -21,11 +31,26 @@ interface GameScreenProps {
   }) => void;
 }
 
-export default function GameScreen({ onGameOver }: GameScreenProps) {
+function grammarPlaceholder(c: GrammarChallenge): WordData {
+  return {
+    word: '···',
+    definition: c.errorLabel,
+    synonyms: [],
+    sentence: c.flawed,
+    band: c.band,
+  };
+}
+
+function truncateLabel(text: string, max = 18): string {
+  return text.length > max ? `${text.substring(0, max - 3)}...` : text;
+}
+
+export default function GameScreen({ gameMode, onGameOver }: GameScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(0);
   const gridOffsetRef = useRef<number>(0);
+  const grammarByAlienRef = useRef<Map<string, GrammarChallenge>>(new Map());
   
   const [gameState, setGameState] = useState<GameState>({
     status: 'playing',
@@ -45,6 +70,8 @@ export default function GameScreen({ onGameOver }: GameScreenProps) {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [laser, setLaser] = useState<Laser | null>(null);
   const [stars, setStars] = useState<Star[]>([]);
+  const [grammarFeedback, setGrammarFeedback] = useState<GrammarFeedbackData | null>(null);
+  const [timeLeft, setTimeLeft] = useState(gameMode === 'speedrun' ? SPEED_RUN_SECONDS : undefined);
 
   // Initialize canvas size
   useEffect(() => {
@@ -62,35 +89,77 @@ export default function GameScreen({ onGameOver }: GameScreenProps) {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  // Generate wave
+  const pickQuestion = useCallback((targetAlien: Alien): Question => {
+    const challenge = grammarByAlienRef.current.get(targetAlien.id);
+    return generateQuestionForMode(gameMode, targetAlien.wordData, targetAlien.id, challenge);
+  }, [gameMode]);
+
   const generateWave = useCallback((waveNumber: number, canvasWidth: number) => {
     const newAliens: Alien[] = [];
-    const rows = Math.min(5, 3 + Math.floor(waveNumber / 3));
-    const cols = 8;
-    
-    // Select words based on wave difficulty
+    const rows = gameMode === 'grammar' ? Math.min(4, 2 + Math.floor(waveNumber / 2)) : Math.min(5, 3 + Math.floor(waveNumber / 3));
+    const cols = gameMode === 'grammar' ? 6 : 8;
     const minBand = waveNumber <= 2 ? 5 : waveNumber <= 4 ? 5 : 6;
     const maxBand = waveNumber <= 2 ? 6 : waveNumber <= 4 ? 7 : 7;
-    
-    const availableWords = wordBank.filter(w => w.band >= minBand && w.band <= maxBand);
-    
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const wordData = availableWords[Math.floor(Math.random() * availableWords.length)];
-        const alien = createAlien(wordData, row, col, `alien-${row}-${col}`, canvasWidth);
-        newAliens.push(alien);
+    const availableWords = wordBank.filter((w) => w.band >= minBand && w.band <= maxBand);
+
+    grammarByAlienRef.current.clear();
+
+    if (gameMode === 'grammar') {
+      const challenges = pickGrammarChallenges(rows * cols, waveNumber);
+      let idx = 0;
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const challenge = challenges[idx++];
+          const id = `alien-${row}-${col}`;
+          grammarByAlienRef.current.set(id, challenge);
+          const alien = createAlien(grammarPlaceholder(challenge), row, col, id, canvasWidth);
+          alien.word = truncateLabel(challenge.flawed, 16);
+          newAliens.push(alien);
+        }
+      }
+    } else {
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const wordData = availableWords[Math.floor(Math.random() * availableWords.length)];
+          const alien = createAlien(wordData, row, col, `alien-${row}-${col}`, canvasWidth);
+          if (gameMode === 'shooter') {
+            alien.word = wordData.word;
+          }
+          newAliens.push(alien);
+        }
       }
     }
-    
+
     setAliens(newAliens);
-    
-    // Generate first question
+
     if (newAliens.length > 0) {
       const randomAlien = newAliens[Math.floor(Math.random() * newAliens.length)];
-      const question = generateQuestion(randomAlien.wordData, randomAlien.id);
-      setGameState(prev => ({ ...prev, currentQuestion: question }));
+      const question = pickQuestion(randomAlien);
+      setGameState((prev) => ({ ...prev, currentQuestion: question, inputText: '' }));
     }
-  }, []);
+  }, [gameMode, pickQuestion]);
+
+  useEffect(() => {
+    if (gameMode !== 'speedrun' || gameState.status !== 'playing') return;
+
+    const timer = window.setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev === undefined || prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [gameMode, gameState.status]);
+
+  useEffect(() => {
+    if (gameMode === 'speedrun' && timeLeft === 0 && gameState.status === 'playing') {
+      setGameState((prev) => ({ ...prev, status: 'gameOver', lives: 0 }));
+      audioEngine.play('gameOver');
+    }
+  }, [gameMode, timeLeft, gameState.status]);
 
   // Start first wave when canvas is ready
   useEffect(() => {
@@ -298,110 +367,151 @@ export default function GameScreen({ onGameOver }: GameScreenProps) {
     }
   }, [gameState.lives, gameState.status]);
 
-  // Handle answer submission
-  const handleAnswerSubmit = useCallback((answer: string) => {
-    if (!gameState.currentQuestion) return;
-
-    const isCorrect = checkAnswer(answer, gameState.currentQuestion);
-    
-    if (isCorrect) {
-      // Find target alien
-      const targetAlien = aliens.find(a => a.id === gameState.currentQuestion?.targetAlienId);
-      
-      if (targetAlien) {
-        // Fire laser
-        setLaser({
-          x: targetAlien.x + targetAlien.width / 2,
-          y: window.innerHeight - 100,
-          targetY: targetAlien.y + targetAlien.height / 2,
-          speed: 15,
-          isActive: true,
-          color: '#00FF00'
-        });
-
-        // Mark alien as dead
-        setAliens(prev => prev.map(a => 
-          a.id === targetAlien.id ? { ...a, isAlive: false } : a
-        ));
-
-        // Create explosion
-        setParticles(prev => [...prev, ...createExplosion(
-          targetAlien.x + targetAlien.width / 2,
-          targetAlien.y + targetAlien.height / 2,
-          targetAlien.color
-        )]);
-
-        // Play sounds
-        audioEngine.play('correct');
-        setTimeout(() => audioEngine.play('explosion'), 100);
-      }
-
-      // Update score and combo
-      setGameState(prev => {
-        const newCombo = prev.combo + 1;
-        const newComboMultiplier = 1 + (newCombo - 1) * 0.5;
-        const points = Math.round(100 * newComboMultiplier);
-        
-        return {
-          ...prev,
-          score: prev.score + points,
-          combo: newCombo,
-          comboMultiplier: newComboMultiplier,
-          wordsCorrect: prev.wordsCorrect + 1,
-          totalAttempts: prev.totalAttempts + 1
-        };
-      });
-
-    } else {
-      // Wrong answer
-      audioEngine.play('wrong');
-      
-      // Reset combo and track wrong word
-      setGameState(prev => {
-        const currentAlien = aliens.find(a => a.id === prev.currentQuestion?.targetAlienId);
-        const newWrongWords = currentAlien && !prev.wrongWords.find(w => w.word === currentAlien.wordData.word)
-          ? [...prev.wrongWords, currentAlien.wordData]
-          : prev.wrongWords;
-        
-        return {
-          ...prev,
-          combo: 0,
-          comboMultiplier: 1,
-          wrongWords: newWrongWords,
-          totalAttempts: prev.totalAttempts + 1
-        };
-      });
-    }
-
-    // Generate new question for next round
+  const advanceAfterCorrect = useCallback(() => {
     setTimeout(() => {
-      setAliens(prevAliens => {
-        const aliveAliens = prevAliens.filter(a => a.isAlive);
-        
+      setAliens((prevAliens) => {
+        const aliveAliens = prevAliens.filter((a) => a.isAlive);
+
         if (aliveAliens.length === 0) {
-          // Wave complete
-          setGameState(prev => {
+          setGameState((prev) => {
             const newWave = prev.wave + 1;
             audioEngine.play('waveComplete');
-            
-            // Generate next wave after delay
             setTimeout(() => {
               generateWave(newWave, canvasRef.current?.width || window.innerWidth);
             }, 2000);
-            
             return { ...prev, wave: newWave };
           });
         } else {
-          // Select new alien for question
           const randomAlien = aliveAliens[Math.floor(Math.random() * aliveAliens.length)];
-          const question = generateQuestion(randomAlien.wordData, randomAlien.id);
-          setGameState(prev => ({ ...prev, currentQuestion: question }));
+          const question = pickQuestion(randomAlien);
+          setGameState((prev) => ({ ...prev, currentQuestion: question, inputText: '' }));
         }
-        
+
         return prevAliens;
       });
     }, 500);
-  }, [aliens, gameState.currentQuestion]);
+  }, [generateWave, pickQuestion]);
+
+  const destroyTargetAlien = useCallback((targetAlien: Alien) => {
+    setLaser({
+      x: targetAlien.x + targetAlien.width / 2,
+      y: window.innerHeight - 100,
+      targetY: targetAlien.y + targetAlien.height / 2,
+      speed: 15,
+      isActive: true,
+      color: '#00FF00',
+    });
+
+    setAliens((prev) =>
+      prev.map((a) => (a.id === targetAlien.id ? { ...a, isAlive: false } : a))
+    );
+
+    setParticles((prev) => [
+      ...prev,
+      ...createExplosion(
+        targetAlien.x + targetAlien.width / 2,
+        targetAlien.y + targetAlien.height / 2,
+        targetAlien.color
+      ),
+    ]);
+
+    audioEngine.play('correct');
+    setTimeout(() => audioEngine.play('explosion'), 100);
+  }, []);
+
+  const handleAnswerSubmit = useCallback(
+    (answer: string) => {
+      if (!gameState.currentQuestion || grammarFeedback) return;
+
+      const question = gameState.currentQuestion;
+      let isCorrect = false;
+
+      if (question.type === 'grammarFix') {
+        isCorrect = checkGrammarAnswer(answer, question);
+      } else if (question.type === 'shooter') {
+        isCorrect = checkShooterAnswer(answer, question, aliens);
+      } else {
+        isCorrect = checkAnswer(answer, question);
+      }
+
+      if (isCorrect) {
+        const targetAlien = aliens.find((a) => a.id === question.targetAlienId);
+        if (targetAlien) destroyTargetAlien(targetAlien);
+
+        setGameState((prev) => {
+          const newCombo = prev.combo + 1;
+          const newComboMultiplier = 1 + (newCombo - 1) * 0.5;
+          const points = Math.round(100 * newComboMultiplier);
+          return {
+            ...prev,
+            score: prev.score + points,
+            combo: newCombo,
+            comboMultiplier: newComboMultiplier,
+            wordsCorrect: prev.wordsCorrect + 1,
+            totalAttempts: prev.totalAttempts + 1,
+          };
+        });
+
+        advanceAfterCorrect();
+      } else {
+        audioEngine.play('wrong');
+
+        if (gameMode === 'grammar' && question.flawedSentence && question.correctSentence && question.grammarTip) {
+          setGrammarFeedback({
+            flawed: question.flawedSentence,
+            correct: question.correctSentence,
+            tip: question.grammarTip,
+            errorLabel: question.errorLabel ?? 'Grammar',
+          });
+
+          setGameState((prev) => {
+            const newLives = prev.lives - 1;
+            if (newLives <= 0) audioEngine.play('gameOver');
+            else audioEngine.play('lifeLost');
+            return {
+              ...prev,
+              lives: newLives,
+              combo: 0,
+              comboMultiplier: 1,
+              totalAttempts: prev.totalAttempts + 1,
+            };
+          });
+          return;
+        }
+
+        setGameState((prev) => {
+          const currentAlien = aliens.find((a) => a.id === prev.currentQuestion?.targetAlienId);
+          const newWrongWords =
+            currentAlien && !prev.wrongWords.find((w) => w.word === currentAlien.wordData.word)
+              ? [...prev.wrongWords, currentAlien.wordData]
+              : prev.wrongWords;
+
+          return {
+            ...prev,
+            combo: 0,
+            comboMultiplier: 1,
+            wrongWords: newWrongWords,
+            totalAttempts: prev.totalAttempts + 1,
+          };
+        });
+      }
+    },
+    [
+      aliens,
+      gameState.currentQuestion,
+      grammarFeedback,
+      gameMode,
+      destroyTargetAlien,
+      advanceAfterCorrect,
+    ]
+  );
+
+  const dismissGrammarFeedback = useCallback(() => {
+    setGrammarFeedback(null);
+    if (gameState.lives > 0) {
+      setGameState((prev) => ({ ...prev, inputText: '' }));
+    }
+  }, [gameState.lives]);
 
   // Handle input change
   const handleInputChange = useCallback((text: string) => {
@@ -424,18 +534,24 @@ export default function GameScreen({ onGameOver }: GameScreenProps) {
         wave={gameState.wave}
         combo={gameState.combo}
         comboMultiplier={gameState.comboMultiplier}
+        mode={gameMode}
+        timeLeft={timeLeft}
       />
-      
-      {/* Question Prompt */}
+
       {gameState.currentQuestion && (
         <QuestionPrompt
           question={gameState.currentQuestion}
           inputText={gameState.inputText}
           onInputChange={handleInputChange}
           onSubmit={handleAnswerSubmit}
+          disabled={!!grammarFeedback}
         />
       )}
-      
+
+      {grammarFeedback && (
+        <GrammarFeedback feedback={grammarFeedback} onDismiss={dismissGrammarFeedback} />
+      )}
+
       {/* Scanline overlay */}
       <div className="absolute inset-0 pointer-events-none scanlines" />
     </div>

@@ -2,20 +2,37 @@ import { useState, useCallback } from 'react';
 import { audioEngine } from '../../utils/audioUtils';
 import IELTSTips from '../UI/IELTSTips';
 import DoYouKnow from '../UI/DoYouKnow';
+import { GameMode } from '../../types/mode.types';
+import { GAME_MODES } from '../../data/gameModes';
 
 interface StartScreenProps {
-  onStartGame: () => void;
+  onStartGame: (mode: GameMode) => void;
 }
+
+const accentClasses = {
+  cyan: 'border-neon-cyan text-neon-cyan hover:bg-neon-cyan/10',
+  pink: 'border-neon-pink text-neon-pink hover:bg-neon-pink/10',
+  yellow: 'border-neon-yellow text-neon-yellow hover:bg-neon-yellow/10',
+  green: 'border-neon-green text-neon-green hover:bg-neon-green/10',
+} as const;
+
+const selectedAccent = {
+  cyan: 'bg-neon-cyan text-black border-neon-cyan',
+  pink: 'bg-neon-pink text-black border-neon-pink',
+  yellow: 'bg-neon-yellow text-black border-neon-yellow',
+  green: 'bg-neon-green text-black border-neon-green',
+} as const;
 
 export default function StartScreenEnhanced({ onStartGame }: StartScreenProps) {
   const [activeTab, setActiveTab] = useState<'menu' | 'tips' | 'facts' | 'how-to'>('menu');
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<GameMode>('classic');
 
   const handleStartClick = useCallback(() => {
     audioEngine.resume();
     audioEngine.play('buttonClick');
-    onStartGame();
-  }, [onStartGame]);
+    onStartGame(selectedMode);
+  }, [onStartGame, selectedMode]);
 
   const handleTabChange = useCallback((tab: 'menu' | 'tips' | 'facts' | 'how-to') => {
     audioEngine.play('buttonClick');
@@ -96,17 +113,46 @@ export default function StartScreenEnhanced({ onStartGame }: StartScreenProps) {
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto px-4 pb-20">
           {activeTab === 'menu' && (
-            <div className="max-w-md mx-auto space-y-6">
-              {/* Main Menu Buttons */}
-              <div className="flex flex-col gap-4">
-                <button
-                  onClick={handleStartClick}
-                  className="game-button text-lg min-w-[250px] animate-pulse-glow py-6"
-                >
-                  START GAME
-                </button>
+            <div className="max-w-lg mx-auto space-y-6">
+              <p className="font-pixel text-xs text-center text-gray-400">CHOOSE GAME MODE</p>
+              <div className="grid gap-3">
+                {GAME_MODES.map((mode) => (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    onClick={() => {
+                      audioEngine.play('buttonClick');
+                      setSelectedMode(mode.id);
+                    }}
+                    className={`text-left p-4 rounded-lg border-2 transition-all font-mono ${
+                      selectedMode === mode.id
+                        ? selectedAccent[mode.accent]
+                        : accentClasses[mode.accent]
+                    }`}
+                  >
+                    <span className="font-pixel text-sm block mb-1">
+                      {mode.icon} {mode.title}
+                    </span>
+                    <span
+                      className={`text-xs leading-relaxed ${
+                        selectedMode === mode.id ? 'text-black/80' : 'text-gray-400'
+                      }`}
+                    >
+                      {mode.description}
+                    </span>
+                  </button>
+                ))}
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={handleStartClick}
+                className="game-button text-lg w-full animate-pulse-glow py-6"
+              >
+                START — {GAME_MODES.find((m) => m.id === selectedMode)?.title.toUpperCase()}
+              </button>
+
+              <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => handleTabChange('tips')}
                     className="px-4 py-4 font-pixel text-xs text-neon-cyan border border-neon-cyan rounded hover:bg-neon-cyan/10 transition-all"
@@ -122,27 +168,27 @@ export default function StartScreenEnhanced({ onStartGame }: StartScreenProps) {
                   </button>
                 </div>
 
-                <button
-                  onClick={handleHowToPlay}
-                  className="px-6 py-3 font-pixel text-xs text-neon-green border border-neon-green rounded hover:bg-neon-green/10 transition-all"
-                >
-                  📖 HOW TO PLAY
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleHowToPlay}
+                className="px-6 py-3 font-pixel text-xs text-neon-green border border-neon-green rounded hover:bg-neon-green/10 transition-all w-full"
+              >
+                📖 HOW TO PLAY
+              </button>
 
               {/* Stats preview */}
               <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-700">
                 <div className="text-center">
-                  <div className="font-pixel text-2xl text-neon-pink">50+</div>
+                  <div className="font-pixel text-2xl text-neon-pink">4</div>
+                  <div className="font-mono text-xs text-gray-400">Game Modes</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-pixel text-2xl text-neon-cyan">18+</div>
+                  <div className="font-mono text-xs text-gray-400">Grammar Fixes</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-pixel text-2xl text-neon-green">50+</div>
                   <div className="font-mono text-xs text-gray-400">Words</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-pixel text-2xl text-neon-cyan">12</div>
-                  <div className="font-mono text-xs text-gray-400">Question Types</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-pixel text-2xl text-neon-green">100+</div>
-                  <div className="font-mono text-xs text-gray-400">IELTS Tips</div>
                 </div>
               </div>
             </div>
