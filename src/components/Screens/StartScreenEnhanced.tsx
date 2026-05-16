@@ -50,7 +50,7 @@ export default function StartScreenEnhanced({ onStartGame }: StartScreenProps) {
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden">
+    <div className="relative min-h-[100dvh] flex flex-col overflow-x-hidden">
       {/* Animated background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-cyan-900/20" />

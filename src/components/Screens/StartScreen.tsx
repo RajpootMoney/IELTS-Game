@@ -32,7 +32,7 @@ Good luck!`);
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden">
       {/* Animated starfield background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-cyan-900/20" />

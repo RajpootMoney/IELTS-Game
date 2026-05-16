@@ -112,7 +112,7 @@ function App() {
   const speakingMission = MISSIONS.find((m) => m.id === 'speaking-booth')!
 
   return (
-    <div className="min-h-screen bg-game-bg text-white overflow-hidden">
+    <div className="min-h-[100dvh] bg-game-bg text-white overflow-x-hidden">
       {screen === 'splash' && (
         <SplashScreen onComplete={() => setScreen(progress.onboardingComplete ? 'hub' : 'onboarding')} />
       )}

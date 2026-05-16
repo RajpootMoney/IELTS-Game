@@ -99,7 +99,7 @@ export default function GrammarInvasionMode({ onExit }: GrammarInvasionModeProps
 
   if (lives <= 0) {
     return (
-      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center text-white p-4">
+      <div className="min-h-[100dvh] bg-gray-950 flex flex-col items-center justify-center text-white p-4">
         <h2 className="text-4xl font-bold text-rose-500 mb-4">GAME OVER</h2>
         <p className="text-xl mb-8">Final Score: {score}</p>
         <button 
@@ -113,7 +113,7 @@ export default function GrammarInvasionMode({ onExit }: GrammarInvasionModeProps
   }
 
   return (
-    <div className="relative min-h-screen bg-gray-950 overflow-hidden flex flex-col">
+    <div className="relative min-h-[100dvh] bg-gray-950 overflow-hidden flex flex-col">
       {/* HUD */}
       <div className="absolute top-0 left-0 w-full p-4 flex justify-between items-start z-10">
         <div className="flex gap-4">
@@ -129,9 +129,15 @@ export default function GrammarInvasionMode({ onExit }: GrammarInvasionModeProps
           <div className="bg-gray-900/50 backdrop-blur-sm px-4 py-1.5 rounded-full border border-gray-800 font-mono text-cyan-400">
             {score.toString().padStart(6, '0')}
           </div>
+          <button 
+            onClick={onExit}
+            className="bg-gray-900/50 backdrop-blur-sm px-4 py-1.5 rounded-full border border-gray-800 font-bold text-gray-500 hover:text-white transition-colors"
+          >
+            Abort
+          </button>
         </div>
         
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-end gap-2 mt-10 md:mt-0">
           {streaks > 2 && (
             <div className="text-orange-400 font-black italic flex items-center gap-1 animate-pulse">
               <Zap size={16} className="fill-orange-400" /> {streaks}x COMBO!
@@ -279,14 +285,6 @@ export default function GrammarInvasionMode({ onExit }: GrammarInvasionModeProps
           )}
         </AnimatePresence>
       </div>
-      
-      {/* Exit Button */}
-      <button 
-        onClick={onExit}
-        className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors z-50"
-      >
-        Abort
-      </button>
     </div>
   )
 }

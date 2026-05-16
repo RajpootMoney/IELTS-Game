@@ -44,7 +44,7 @@ export default function GameOverScreen({ stats, onPlayAgain, onMainMenu }: GameO
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden p-4">
+    <div className="relative min-h-[100dvh] flex flex-col items-center justify-center overflow-hidden p-4">
       {/* Animated background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-red-900/10 via-purple-900/10 to-blue-900/10" />

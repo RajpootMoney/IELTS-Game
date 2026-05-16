@@ -12,7 +12,7 @@ const tints = {
 
 export default function HubBackground({ children, tint = 'default' }: HubBackgroundProps) {
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden">
+    <div className="relative min-h-[100dvh] flex flex-col overflow-x-hidden">
       <div className="absolute inset-0">
         <div className={`absolute inset-0 bg-gradient-to-b ${tints[tint]}`} />
         <div className="absolute inset-0 grid-bg opacity-25" />
@@ -31,7 +31,7 @@ export default function HubBackground({ children, tint = 'default' }: HubBackgro
           />
         ))}
       </div>
-      <div className="relative z-10 flex flex-col min-h-screen">{children}</div>
+      <div className="relative z-10 flex flex-col min-h-[100dvh]">{children}</div>
       <div className="absolute inset-0 pointer-events-none scanlines" />
     </div>
   );

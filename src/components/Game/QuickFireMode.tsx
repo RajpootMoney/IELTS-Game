@@ -89,7 +89,7 @@ export default function QuickFireMode({ onExit }: QuickFireModeProps) {
 
   if (lives <= 0) {
     return (
-      <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center text-white p-4">
+      <div className="min-h-[100dvh] bg-gray-950 flex flex-col items-center justify-center text-white p-4">
         <h2 className="text-4xl font-bold text-rose-500 mb-4">GAME OVER</h2>
         <p className="text-xl mb-8">Final Score: {score}</p>
         <button 
@@ -103,7 +103,7 @@ export default function QuickFireMode({ onExit }: QuickFireModeProps) {
   }
 
   return (
-    <div className="relative min-h-screen bg-gray-950 overflow-hidden flex flex-col">
+    <div className="relative min-h-[100dvh] bg-gray-950 overflow-y-auto overflow-x-hidden flex flex-col">
       {/* HUD */}
       <div className="absolute top-0 left-0 w-full p-4 flex justify-between items-start z-10">
         <div className="flex gap-4">
@@ -119,6 +119,12 @@ export default function QuickFireMode({ onExit }: QuickFireModeProps) {
           <div className="bg-gray-900/50 backdrop-blur-sm px-4 py-1.5 rounded-full border border-gray-800 font-mono text-cyan-400">
             {score.toString().padStart(6, '0')}
           </div>
+          <button 
+            onClick={onExit}
+            className="bg-gray-900/50 backdrop-blur-sm px-4 py-1.5 rounded-full border border-gray-800 font-bold text-gray-500 hover:text-white transition-colors"
+          >
+            Abort
+          </button>
         </div>
         
         {streaks > 2 && (
@@ -231,14 +237,6 @@ export default function QuickFireMode({ onExit }: QuickFireModeProps) {
           </motion.div>
         </AnimatePresence>
       </div>
-      
-      {/* Exit Button */}
-      <button 
-        onClick={onExit}
-        className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors z-50"
-      >
-        Abort
-      </button>
     </div>
   )
 }
