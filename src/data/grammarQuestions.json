@@ -1,0 +1,44 @@
+[
+  {
+    "id": "gq1",
+    "incorrect": "The datas are showing a clear trend.",
+    "correct": "The data is showing a clear trend.",
+    "band": 6,
+    "errorType": "uncountable_nouns"
+  },
+  {
+    "id": "gq2",
+    "incorrect": "She don't have enough time for the exam.",
+    "correct": "She doesn't have enough time for the exam.",
+    "band": 5,
+    "errorType": "subject_verb_agreement"
+  },
+  {
+    "id": "gq3",
+    "incorrect": "If I will have money, I will buy a car.",
+    "correct": "If I have money, I will buy a car.",
+    "band": 6,
+    "errorType": "first_conditional"
+  },
+  {
+    "id": "gq4",
+    "incorrect": "Despite of the rain, we went out.",
+    "correct": "Despite the rain, we went out.",
+    "band": 7,
+    "errorType": "prepositions"
+  },
+  {
+    "id": "gq5",
+    "incorrect": "I look forward to hear from you.",
+    "correct": "I look forward to hearing from you.",
+    "band": 7,
+    "errorType": "gerunds_infinitives"
+  },
+  {
+    "id": "gq6",
+    "incorrect": "The number of students have increased significantly.",
+    "correct": "The number of students has increased significantly.",
+    "band": 8,
+    "errorType": "subject_verb_agreement_complex"
+  }
+]

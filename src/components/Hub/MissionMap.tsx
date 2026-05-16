@@ -10,6 +10,8 @@ interface MissionMapProps {
   onSelectZone: (zone: SkillZone) => void;
   onDailyMix: () => void;
   onChangeBand: () => void;
+  onGrammarInvasion: () => void;
+  onQuickFire: () => void;
 }
 
 const zoneBorder: Record<string, string> = {
@@ -25,6 +27,8 @@ export default function MissionMap({
   onSelectZone,
   onDailyMix,
   onChangeBand,
+  onGrammarInvasion,
+  onQuickFire,
 }: MissionMapProps) {
   const handleZone = useCallback(
     (zone: SkillZone) => {
@@ -75,6 +79,39 @@ export default function MissionMap({
             <span className="font-mono text-xs text-gray-400">
               Listening → Reading → Writing → Speaking · ~8 min · +{DAILY_MIX_XP} XP
             </span>
+          </button>
+        </div>
+
+        <p className="font-pixel text-xs text-center text-cyan-400 mb-4 animate-pulse">GAMIFIED MODES</p>
+        <div className="px-4 pb-6 max-w-lg mx-auto grid gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              audioEngine.play('buttonClick');
+              onGrammarInvasion();
+            }}
+            className="flex items-center gap-4 p-4 rounded-lg border-2 bg-black/40 transition-all text-left border-cyan-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:bg-cyan-900/20"
+          >
+            <span className="text-3xl">🚀</span>
+            <div className="flex-1 min-w-0">
+              <span className="font-pixel text-sm text-cyan-400 block">Grammar Invasion</span>
+              <span className="font-mono text-xs text-gray-400">Fix the Drift (Typing)</span>
+            </div>
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => {
+              audioEngine.play('buttonClick');
+              onQuickFire();
+            }}
+            className="flex items-center gap-4 p-4 rounded-lg border-2 bg-black/40 transition-all text-left border-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:bg-purple-900/20"
+          >
+            <span className="text-3xl">⚡</span>
+            <div className="flex-1 min-w-0">
+              <span className="font-pixel text-sm text-purple-400 block">Quick-Fire Q&A</span>
+              <span className="font-mono text-xs text-gray-400">Zero-G Multiple Choice</span>
+            </div>
           </button>
         </div>
 

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "qf1",
+    "question": "Which word is a synonym for 'mitigate'?",
+    "options": ["Worsen", "Alleviate", "Provoke", "Establish"],
+    "correctAnswer": "Alleviate",
+    "type": "vocabulary",
+    "band": 8
+  },
+  {
+    "id": "qf2",
+    "question": "Choose the correct spelling:",
+    "options": ["Accomodation", "Accommodation", "Acommodation", "Acomodation"],
+    "correctAnswer": "Accommodation",
+    "type": "spelling",
+    "band": 6
+  },
+  {
+    "id": "qf3",
+    "question": "What is the meaning of the idiom 'a blessing in disguise'?",
+    "options": ["A good thing that seemed bad at first", "Something obvious", "A bad situation getting worse", "A secret gift"],
+    "correctAnswer": "A good thing that seemed bad at first",
+    "type": "idiom",
+    "band": 7
+  },
+  {
+    "id": "qf4",
+    "question": "Which of these is NOT an Academic Word List (AWL) word?",
+    "options": ["Significant", "Context", "Happy", "Assess"],
+    "correctAnswer": "Happy",
+    "type": "vocabulary",
+    "band": 6
+  },
+  {
+    "id": "qf5",
+    "question": "Select the appropriate transition word: 'The weather was terrible; _____, we decided to go hiking.'",
+    "options": ["Therefore", "Furthermore", "Nevertheless", "Consequently"],
+    "correctAnswer": "Nevertheless",
+    "type": "grammar",
+    "band": 7
+  }
+]

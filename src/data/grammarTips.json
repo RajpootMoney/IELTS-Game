@@ -1,0 +1,26 @@
+{
+  "uncountable_nouns": {
+    "title": "Uncountable Nouns",
+    "tip": "'Data', 'information', 'advice', and 'evidence' are uncountable nouns. They do not take an 's' and usually take a singular verb."
+  },
+  "subject_verb_agreement": {
+    "title": "Subject-Verb Agreement",
+    "tip": "Use 'does' or 'doesn\\'t' with third-person singular subjects (he, she, it). Use 'do' or 'don\\'t' with I, you, we, they."
+  },
+  "first_conditional": {
+    "title": "First Conditional",
+    "tip": "In first conditional sentences, use the Present Simple in the 'if' clause, not 'will'. (If + Present Simple, ... will + infinitive)."
+  },
+  "prepositions": {
+    "title": "Prepositions with 'Despite'",
+    "tip": "Use 'despite' without 'of'. You can say 'despite the rain' or 'in spite of the rain', but never 'despite of'."
+  },
+  "gerunds_infinitives": {
+    "title": "Gerunds after Prepositions",
+    "tip": "The phrase 'look forward to' ends with the preposition 'to'. Prepositions are followed by nouns or gerunds (verb+ing), not base verbs."
+  },
+  "subject_verb_agreement_complex": {
+    "title": "Complex Subject-Verb Agreement",
+    "tip": "The phrase 'The number of [plural noun]' takes a singular verb. 'A number of [plural noun]' takes a plural verb."
+  }
+}

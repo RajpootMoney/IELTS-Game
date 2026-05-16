@@ -15,8 +15,13 @@ import { SkillZone } from './types/hub.types'
 import { TargetBand, WeakTag } from './types/progress.types'
 import { useProgress } from './hooks/useProgress'
 import { MISSIONS } from './data/zones'
+import SplashScreen from './components/Screens/SplashScreen'
+import Footer from './components/UI/Footer'
+import GrammarInvasionMode from './components/Game/GrammarInvasionMode'
+import QuickFireMode from './components/Game/QuickFireMode'
 
 type Screen =
+  | 'splash'
   | 'onboarding'
   | 'hub'
   | 'vocab'
@@ -27,6 +32,8 @@ type Screen =
   | 'dailyMix'
   | 'arcade'
   | 'gameOver'
+  | 'grammarInvasion'
+  | 'quickFire'
 
 interface GameStats {
   score: number
@@ -38,9 +45,7 @@ interface GameStats {
 
 function App() {
   const { progress, chooseBand, recordMission, finishDailyMix, refresh } = useProgress()
-  const [screen, setScreen] = useState<Screen>(() =>
-    progress.onboardingComplete ? 'hub' : 'onboarding'
-  )
+  const [screen, setScreen] = useState<Screen>('splash')
   const [gameMode, setGameMode] = useState<GameMode>('classic')
   const [playSession, setPlaySession] = useState(0)
   const [gameStats, setGameStats] = useState<GameStats>({
@@ -108,6 +113,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-game-bg text-white overflow-hidden">
+      {screen === 'splash' && (
+        <SplashScreen onComplete={() => setScreen(progress.onboardingComplete ? 'hub' : 'onboarding')} />
+      )}
+
       {screen === 'onboarding' && <BandOnboarding onComplete={handleOnboarding} />}
 
       {screen === 'hub' && (
@@ -116,6 +125,8 @@ function App() {
           onSelectZone={handleZone}
           onDailyMix={() => setScreen('dailyMix')}
           onChangeBand={() => setScreen('onboarding')}
+          onGrammarInvasion={() => setScreen('grammarInvasion')}
+          onQuickFire={() => setScreen('quickFire')}
         />
       )}
 
@@ -205,6 +216,16 @@ function App() {
           onMainMenu={goHub}
         />
       )}
+
+      {screen === 'grammarInvasion' && (
+        <GrammarInvasionMode onExit={goHub} />
+      )}
+
+      {screen === 'quickFire' && (
+        <QuickFireMode onExit={goHub} />
+      )}
+
+      <Footer />
     </div>
   )
 }
