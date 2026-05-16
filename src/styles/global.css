@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html {
+    font-family: 'Courier New', monospace;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0a0a0f;
+    color: #ffffff;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  /* Neon glow effects */
+  .neon-text {
+    text-shadow: 
+      0 0 5px currentColor,
+      0 0 10px currentColor,
+      0 0 20px currentColor;
+  }
+  
+  .neon-border {
+    box-shadow: 
+      0 0 5px currentColor,
+      inset 0 0 5px currentColor;
+  }
+  
+  .neon-box-pink {
+    box-shadow: 
+      0 0 10px #FF00FF,
+      0 0 20px #FF00FF,
+      0 0 40px #FF00FF;
+  }
+  
+  .neon-box-cyan {
+    box-shadow: 
+      0 0 10px #00FFFF,
+      0 0 20px #00FFFF,
+      0 0 40px #00FFFF;
+  }
+  
+  /* Pixel font class */
+  .font-pixel {
+    font-family: 'Press Start 2P', monospace;
+  }
+  
+  /* Scanline effect */
+  .scanlines::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15) 0px,
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+  
+  /* Game button styles */
+  .game-button {
+    @apply px-8 py-4 font-pixel text-sm uppercase tracking-widest;
+    @apply border-2 border-neon-cyan text-neon-cyan;
+    @apply transition-all duration-200;
+    @apply hover:bg-neon-cyan hover:text-game-bg;
+    @apply hover:shadow-[0_0_20px_#00FFFF];
+  }
+  
+  /* Grid background */
+  .grid-bg {
+    background-image: 
+      linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+}
+
+@layer utilities {
+  /* Animation utilities */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .animate-blink {
+    animation: blink 1s step-end infinite;
+  }
+}
+
+/* Keyframes */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    filter: brightness(1) drop-shadow(0 0 5px currentColor);
+  }
+  50% { 
+    filter: brightness(1.2) drop-shadow(0 0 20px currentColor);
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
