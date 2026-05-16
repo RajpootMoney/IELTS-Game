@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { GameState, Alien, Particle, Laser, Star, Question, WordData } from '../../types/game.types';
+import { GameState, Alien, Particle, Laser, Star, WordData } from '../../types/game.types';
 import { wordBank } from '../../data/wordBank';
 import { generateQuestion, createAlien, checkAnswer } from '../../data/questionGenerator';
 import { audioEngine } from '../../utils/audioUtils';
@@ -108,7 +108,6 @@ export default function GameScreen({ onGameOver }: GameScreenProps) {
     if (!ctx) return;
 
     const gameLoop = (timestamp: number) => {
-      const deltaTime = timestamp - lastTimeRef.current;
       lastTimeRef.current = timestamp;
 
       // Clear canvas
@@ -132,6 +131,7 @@ export default function GameScreen({ onGameOver }: GameScreenProps) {
           const bob = Math.sin(timestamp * 0.003 + alien.bobOffset) * 2;
           return {
             ...alien,
+            x: alien.x + bob,
             y: alien.y + speed,
             bobOffset: alien.bobOffset + 0.02
           };

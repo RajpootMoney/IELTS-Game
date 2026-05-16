@@ -1,5 +1,4 @@
 import { IELTSTip, DoYouKnowFact, VocabularySet, APIData } from '../types/question.types';
-import { WordData } from '../types/game.types';
 
 // This service simulates API calls and provides rich IELTS content
 // In a production environment, these would be real API calls to IELTS databases
@@ -112,7 +111,7 @@ class IELTSApiService {
       },
       {
         id: 'tip-5',
-        category: 'vocabulary',
+        category: 'general',
         title: 'Learn Word Families',
         content: 'Instead of learning single words, learn word families. For example: economy (n), economic (adj), economically (adv), economize (v). This expands your vocabulary quickly.',
         difficulty: 'intermediate',

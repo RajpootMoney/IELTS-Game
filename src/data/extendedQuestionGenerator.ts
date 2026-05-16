@@ -67,15 +67,6 @@ const questionTemplates: Record<ExtendedQuestionType, string[]> = {
   ]
 };
 
-// Question difficulty settings
-const difficultySettings = {
-  1: { band: 5, points: 100, timeBonus: 10 },
-  2: { band: 6, points: 150, timeBonus: 15 },
-  3: { band: 7, points: 200, timeBonus: 20 },
-  4: { band: 8, points: 300, timeBonus: 25 },
-  5: { band: 8, points: 500, timeBonus: 30 }
-};
-
 // Generate extended question
 export async function generateExtendedQuestion(
   wordData: WordData,
@@ -123,14 +114,14 @@ export async function generateExtendedQuestion(
       explanation = `The word "${wordData.word}" fits naturally in the sentence: "${wordData.sentence.replace('_____', wordData.word)}"`;
       break;
       
-    case 'antonym':
-      // Generate or use antonym if available
-      const antonym = wordData.antonym || wordData.synonyms[0]; // Fallback
+    case 'antonym': {
+      const antonym = wordData.antonyms?.[0] ?? wordData.synonyms[0];
       prompt = template.replace('{word}', wordData.word);
       correctAnswer = antonym;
       acceptableAnswers = [antonym];
       explanation = `An antonym is a word with the opposite meaning. The opposite of "${wordData.word}" is "${antonym}".`;
       break;
+    }
       
     case 'wordForm':
       // This would require word form data in WordData
@@ -160,14 +151,17 @@ export async function generateExtendedQuestion(
       explanation = `Collocations are words that naturally go together. Native speakers automatically use these combinations.`;
       break;
       
-    case 'idiomCompletion':
-      const idiom = 'break the ice';
-      const partialIdiom = 'break the ____';
+    case 'idiomCompletion': {
+      const idiomPhrase = wordData.idiom?.phrase ?? 'break the ice';
+      const idiomAnswer = idiomPhrase.split(' ').pop() ?? 'ice';
+      const partialIdiom = idiomPhrase.replace(idiomAnswer, '____');
       prompt = template.replace('{idiom}', partialIdiom);
-      correctAnswer = 'ice';
-      acceptableAnswers = ['ice'];
-      explanation = `The idiom "break the ice" means to initiate conversation in a social setting and make people feel comfortable.`;
+      correctAnswer = idiomAnswer;
+      acceptableAnswers = [idiomAnswer];
+      explanation = wordData.idiom?.meaning
+        ?? `The idiom "${idiomPhrase}" is a common English expression worth learning for IELTS.`;
       break;
+    }
       
     case 'academicWord':
       prompt = template.replace('{definition}', wordData.definition);
